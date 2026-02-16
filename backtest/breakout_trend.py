@@ -9,7 +9,7 @@ from services.db_data_loader import load_stock_data as load_db_stock_data
 SYMBOLS = get_symbol_list()
 INITIAL_CAPITAL = 100000
 RISK_PER_TRADE = 0.01
-MAX_PORTFOLIO_RISK = 0.1
+MAX_PORTFOLIO_RISK = 0.05
 
 START_DATE = "2015-01-01"
 END_DATE = "2026-02-13"
@@ -20,7 +20,6 @@ END_DATE = "2026-02-13"
 # ======================================
 
 def prepare_master():
-    STOCK_COUNT = 0
     frames = []
 
     # ----- Load Nifty -----
@@ -169,7 +168,8 @@ def run_backtest():
                 "stop": stop,
                 "qty": qty,
                 "risk_amount": risk_amount,
-                "risk": risk
+                "risk": risk,
+                "entry_date" : current_date
             }
 
             current_risk += risk_amount
