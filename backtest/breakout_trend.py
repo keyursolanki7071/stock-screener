@@ -3,15 +3,16 @@ import numpy as np
 from services.upstox_data import load_stock_data
 from services.instrument_mapper import get_instrument_key
 from services.instrument_mapper import get_symbol_list
+from services.db_data_loader import load_stock_data as load_db_stock_data
 
 
 SYMBOLS = get_symbol_list()
 INITIAL_CAPITAL = 100000
 RISK_PER_TRADE = 0.01
-MAX_PORTFOLIO_RISK = 0.04
+MAX_PORTFOLIO_RISK = 0.1
 
 START_DATE = "2015-01-01"
-END_DATE = "2026-02-12"
+END_DATE = "2026-02-13"
 
 
 # ======================================
@@ -19,7 +20,7 @@ END_DATE = "2026-02-12"
 # ======================================
 
 def prepare_master():
-
+    STOCK_COUNT = 0
     frames = []
 
     # ----- Load Nifty -----
@@ -31,14 +32,12 @@ def prepare_master():
 
     # ----- Load Stocks -----
     for symbol in SYMBOLS:
+        # instrument_key = get_instrument_key(symbol)
 
-        instrument_key = get_instrument_key(symbol)
+        # if instrument_key is None:
+        #     continue
 
-        if instrument_key is None:
-            continue
-
-        df = load_stock_data(instrument_key, START_DATE, END_DATE)
-
+        df = load_db_stock_data(symbol, START_DATE, END_DATE)
         if df is None or len(df) < 300:
             continue
 
@@ -138,8 +137,8 @@ def run_backtest():
             if not row["market_ok"]:
                 continue
 
-            # if current_risk >= capital * MAX_PORTFOLIO_RISK:
-            #     break
+            if current_risk >= capital * MAX_PORTFOLIO_RISK:
+                break
 
             # Entry Conditions
             if row["close"] <= row["ema_200"]:

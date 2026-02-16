@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from services.upstox_data import load_stock_data
 from services.instrument_mapper import get_instrument_key
 from services.instrument_mapper import get_symbol_list
-
+from services.db_data_loader import load_stock_data as load_db_stock_data
 
 CAPITAL = 100000
 RISK_PER_TRADE = 0.01
@@ -36,12 +36,12 @@ def run_daily_scan():
     # ===== Loop Stocks =====
     for symbol in SYMBOLS:
 
-        instrument_key = get_instrument_key(symbol)
+        # instrument_key = get_instrument_key(symbol)
 
-        if instrument_key is None:
-            continue
+        # if instrument_key is None:
+        #     continue
 
-        df = load_stock_data(instrument_key, start_date, SCAN_DATE)
+        df = load_db_stock_data(symbol, start_date, SCAN_DATE)
         if df is None or len(df) < 300:
             continue
 

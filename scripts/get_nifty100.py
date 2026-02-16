@@ -8,7 +8,7 @@ from io import BytesIO
 # ---------------------------------------
 
 def get_nifty100_symbols():
-    url = "https://archives.nseindia.com/content/indices/ind_nifty100list.csv"
+    url = "https://archives.nseindia.com/content/indices/ind_nifty500list.csv"
 
     headers = {
         "User-Agent": "Mozilla/5.0"
@@ -96,7 +96,7 @@ def map_nifty100_with_upstox():
 if __name__ == "__main__":
     nifty100_upstox_df = map_nifty100_with_upstox()
 
-    output_file = "nifty100_upstox_instruments.csv"
+    output_file = "nifty500_upstox_instruments.csv"
     nifty100_upstox_df.to_csv(output_file, index=False)
 
     print(f"\n✅ File saved successfully: {output_file}")
