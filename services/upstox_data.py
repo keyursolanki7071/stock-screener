@@ -67,5 +67,5 @@ def load_stock_data(instrument_key, start_date, end_date):
     final_df = pd.concat(all_data)
     final_df = final_df[~final_df.index.duplicated(keep="first")]
     final_df.sort_index(inplace=True)
-
+    final_df.index = final_df.index.tz_localize(None)
     return final_df
