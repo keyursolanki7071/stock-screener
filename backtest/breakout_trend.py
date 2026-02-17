@@ -11,7 +11,7 @@ INITIAL_CAPITAL = 100000
 RISK_PER_TRADE = 0.01
 MAX_PORTFOLIO_RISK = 0.05
 
-START_DATE = "2015-01-01"
+START_DATE = "2024-01-01"
 END_DATE = "2026-02-13"
 
 
@@ -155,7 +155,14 @@ def run_backtest():
                 continue
 
             entry = row["close"]
-            risk = entry - stop
+            raw_stop_distance = entry - row["ll_10"]
+            max_stop_distance = entry * 0.05
+            stop_distance = min(raw_stop_distance, max_stop_distance)
+            if stop_distance <= 0:
+                continue
+
+            stop = entry - stop_distance
+            risk = stop_distance
 
             if risk <= 0:
                 continue

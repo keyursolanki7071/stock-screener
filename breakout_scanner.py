@@ -18,6 +18,7 @@ start_date = (today - timedelta(days=500)).strftime("%Y-%m-%d")
 print("Start Date: ", start_date)
 print("End Date: ", SCAN_DATE)
 
+
 def run_daily_scan():
 
     entries = []
@@ -69,6 +70,9 @@ def run_daily_scan():
             if pd.isna(stop):
                 continue
 
+            # ===== APPLY 5% MAX STOP LOSS CAP =====
+            max_stop_price = entry * (1 - 0.05)   # 5% cap
+            stop = max(stop, max_stop_price)
             risk = entry - stop
 
             if risk <= 0:
