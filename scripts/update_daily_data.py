@@ -52,13 +52,12 @@ def main():
             print("No data found. Run full loader first.")
             continue
 
-        start_date = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
+        # start_date = (last_date + timedelta(days=1)).strftime("%Y-%m-%d")
 
         instrument_key = get_instrument_key(symbol)
         if not instrument_key:
             continue
-
-        df = load_stock_data(instrument_key, start_date, today)
+        df = load_stock_data(instrument_key, today, today)
 
         if df is None or df.empty:
             continue
