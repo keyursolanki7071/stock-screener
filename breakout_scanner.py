@@ -4,6 +4,9 @@ from services.upstox_data import load_stock_data
 from services.instrument_mapper import get_instrument_key
 from services.instrument_mapper import get_symbol_list
 from services.db_data_loader import load_stock_data as load_db_stock_data
+from services.news_fetcher import fetch_news
+from services.sentiment_analyzer import analyze_sentiment
+
 
 CAPITAL = 100000
 RISK_PER_TRADE = 0.01
@@ -99,7 +102,13 @@ if __name__ == "__main__":
     if not entries:
         print("No entries today.")
     for e in entries:
-        print(f"{e['symbol']} | Entry: {e['entry']} | Stop: {e['stop']} | Qty: {e['qty']}")
+        headlines = fetch_news(e['symbol'])
+        sentiment = analyze_sentiment(e['symbol'], headlines)
+        print(f"{e['symbol']} | Entry: {e['entry']} | Stop: {e['stop']} | Qty: {e['qty']} | Sentiment: {sentiment['score']} | Decision: {sentiment['decision']}")
+        print(f"Reason: {sentiment['reason']}")
+        print(f"Risks: {sentiment['risks']}")
+        print(f"Summary: {sentiment['summary']}")
+        print()
 
     print("\n--- EXIT FROM STOCKS ---")
     if not exits:
