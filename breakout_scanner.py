@@ -19,6 +19,16 @@ print("Start Date: ", start_date)
 print("End Date: ", SCAN_DATE)
 
 
+def calculate_rsi(df, period=14):
+    delta = df['close'].diff()
+    up = delta.clip(lower=0)
+    down = -delta.clip(upper=0)
+    ema_up = up.ewm(com=period - 1, adjust=False).mean()
+    ema_down = down.ewm(com=period - 1, adjust=False).mean()
+    rs = ema_up / ema_down
+    df['rsi'] = 100 - 100 / (1 + rs)
+    return df
+
 def run_daily_scan():
 
     entries = []
@@ -54,15 +64,16 @@ def run_daily_scan():
         df["hh_20"] = df["high"].rolling(20).max().shift(1)
         df["ll_10"] = df["low"].rolling(10).min().shift(1)
         df["vol_ma_20"] = df["volume"].rolling(20).mean()
-
+        df = calculate_rsi(df, period=14)
         latest = df.iloc[-1]
 
         # ===== ENTRY CONDITIONS =====
         trend_condition = latest["close"] > latest["ema_200"]
         breakout_condition = latest["close"] > latest["hh_20"] * 1.005
         volume_condition = latest["volume"] > 1.5 * latest["vol_ma_20"]
+        rsi_satisfied = not pd.isna(latest['rsi']) and latest['rsi'] >= 50  # Tune: 55 for stricter (lower DD, fewer trades), 45 for looser
 
-        if market_ok and trend_condition and breakout_condition and volume_condition:
+        if market_ok and trend_condition and breakout_condition and volume_condition and rsi_satisfied:
 
             entry = latest["close"]
             stop = latest["ll_10"]

@@ -11,13 +11,22 @@ INITIAL_CAPITAL = 100000
 RISK_PER_TRADE = 0.01
 MAX_PORTFOLIO_RISK = 0.05
 
-START_DATE = "2024-01-01"
+START_DATE = "2015-01-01"
 END_DATE = "2026-02-13"
 
 
 # ======================================
 # PREPARE MASTER DATA
 # ======================================
+def calculate_rsi(df, period=14):
+    delta = df['close'].diff()
+    up = delta.clip(lower=0)
+    down = -delta.clip(upper=0)
+    ema_up = up.ewm(com=period - 1, adjust=False).mean()
+    ema_down = down.ewm(com=period - 1, adjust=False).mean()
+    rs = ema_up / ema_down
+    df['rsi'] = 100 - 100 / (1 + rs)
+    return df
 
 def prepare_master():
     frames = []
@@ -27,7 +36,9 @@ def prepare_master():
     nifty_df = load_stock_data(nifty_key, START_DATE, END_DATE)
 
     nifty_df["ema_200"] = nifty_df["close"].ewm(span=200).mean()
-    nifty_df["market_ok"] = nifty_df["close"] > nifty_df["ema_200"]
+    nifty_df["ema_50"] = nifty_df["close"].ewm(span=50).mean()
+    nifty_df["market_ok"] = (nifty_df["close"] > nifty_df["ema_200"]) & (nifty_df["ema_50"] > nifty_df["ema_200"]) & (nifty_df["ema_200"] > nifty_df["ema_200"].shift(20))  # Slope check: EMA200 rising over last 20 days
+    # nifty_df["market_ok"] = nifty_df["close"] > nifty_df["ema_200"]
 
     # ----- Load Stocks -----
     for symbol in SYMBOLS:
@@ -44,7 +55,7 @@ def prepare_master():
         df["hh_20"] = df["high"].rolling(20).max().shift(1)
         df["ll_10"] = df["low"].rolling(10).min().shift(1)
         df["vol_ma_20"] = df["volume"].rolling(20).mean()
-
+        df = calculate_rsi(df, period=14)
         df["symbol"] = symbol
 
         # Merge Nifty regime
@@ -131,6 +142,9 @@ def run_backtest():
             symbol = row["symbol"]
 
             if symbol in open_positions:
+                continue
+
+            if pd.isna(row['rsi']) or row['rsi'] < 55:  # Tune: 55 for stricter (lower DD, fewer trades), 45 for looser
                 continue
 
             if not row["market_ok"]:
