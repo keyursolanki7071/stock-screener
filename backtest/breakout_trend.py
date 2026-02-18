@@ -54,6 +54,7 @@ def prepare_master():
         df["ema_200"] = df["close"].ewm(span=200).mean()
         df["hh_20"] = df["high"].rolling(20).max().shift(1)
         df["ll_10"] = df["low"].rolling(10).min().shift(1)
+        df["ll_7"] = df["low"].rolling(7).min().shift(1)
         df["vol_ma_20"] = df["volume"].rolling(20).mean()
         df = calculate_rsi(df, period=14)
         df["symbol"] = symbol
@@ -119,7 +120,7 @@ def run_backtest():
                 exit_price = stop
 
             # Exit rule
-            elif row["close"] < row["ll_10"]:
+            elif row["close"] < row["ll_7"]:
                 exit_price = row["close"]
 
             if exit_price is not None:

@@ -63,6 +63,7 @@ def run_daily_scan():
         df["ema_200"] = df["close"].ewm(span=200).mean()
         df["hh_20"] = df["high"].rolling(20).max().shift(1)
         df["ll_10"] = df["low"].rolling(10).min().shift(1)
+        df["ll_7"] = df["low"].rolling(7).min().shift(1)
         df["vol_ma_20"] = df["volume"].rolling(20).mean()
         df = calculate_rsi(df, period=14)
         latest = df.iloc[-1]
@@ -76,7 +77,7 @@ def run_daily_scan():
         if market_ok and trend_condition and breakout_condition and volume_condition and rsi_satisfied:
 
             entry = latest["close"]
-            stop = latest["ll_10"]
+            stop = latest["ll_7"]
 
             if pd.isna(stop):
                 continue
@@ -101,7 +102,7 @@ def run_daily_scan():
                 })
 
         # ===== EXIT CONDITION =====
-        if latest["close"] < latest["ll_10"]:
+        if latest["close"] < latest["ll_7"]:
             exits.append(symbol)
 
     return entries, exits
